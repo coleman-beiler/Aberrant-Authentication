@@ -1,0 +1,5 @@
+## Command to simulate a post so that a web front-end doesn't need to be developed yet.
+
+curl --header "Content-Type: application/json"   --request POST   --data '{"username":"xyz","password":"xyz"}'   http://localhost:8080/add/user/account
+
+curl --header "Content-Type: application/json"   --request POST   --data '{"username":"colemanbeiler","password":"coleman","first_name":"Coleman","last_name":"Beiler","email_address":"coleman@beilers.com","phone_number":"7034398816","birth_date":"01041995"}'   http://localhost:8080/add/user/account
