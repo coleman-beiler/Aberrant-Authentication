@@ -1,0 +1,10 @@
+#########################################################################################################################################################
+
+## Account ##
+
+# CREDENTIALS #
+CREATE TABLE ACCOUNT_LOGIN_CREDENTIALS(account_id char(25), username char(25), password char(100), salt char(50), PRIMARY KEY(username));
+
+# SESSIONS #
+CREATE TABLE ACCOUNT_SESSION_TRACKING(session_token char(50), username char(25), storage_token char(50), request_number INT, session_start_time DATETIME(0), session_last_used DATETIME(0));
+
