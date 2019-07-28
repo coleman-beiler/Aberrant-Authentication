@@ -12,9 +12,9 @@ public class DatabaseController{
         public static DataSource getDataSource(){
             if(datasource == null) {
                 HikariConfig config = new HikariConfig();
-                config.setJdbcUrl("jdbc:mysql://localhost/socialMedia");
-                config.setUsername("SMUSER");
-                config.setPassword("SMPASSWORD");
+                config.setJdbcUrl("jdbc:mysql://localhost/authentication");
+                config.setUsername("root");
+                config.setPassword("Passw0rd");
                 config.setMaximumPoolSize(10);
                 config.setAutoCommit(false);
                 config.addDataSourceProperty("cachePrepStmts", "true");
@@ -31,7 +31,7 @@ public class DatabaseController{
                 try{
                     DataSource dataSource = DatabaseController.getDataSource();
                     connection = dataSource.getConnection();
-                    stmt = connection.prepareStatement("SELECT * FROM LOGIN_CREDENTIALS");
+                    stmt = connection.prepareStatement("SELECT * FROM ACCOUNT_LOGIN_CREDENTIALS;");
                     resultSet = stmt.executeQuery();
                     while (resultSet.next()){
                             System.out.println(resultSet.getString(1) + "," + resultSet.getString(2) + "," + resultSet.getString(3) + "," + resultSet.getString(4));
