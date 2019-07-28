@@ -49,5 +49,11 @@ public class HookController {
             System.out.println(influencerId);
         }
     }
+
+    @RequestMapping("/test")
+    public String returnAll(){
+        dbc.start();
+        return "hello";
+    }
 }
 
