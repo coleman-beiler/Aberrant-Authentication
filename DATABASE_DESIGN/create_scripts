@@ -8,3 +8,6 @@ CREATE TABLE ACCOUNT_LOGIN_CREDENTIALS(account_id char(25), username char(25), p
 # SESSIONS #
 CREATE TABLE ACCOUNT_SESSION_TRACKING(session_token char(50), username char(25), storage_token char(50), request_number INT, session_start_time DATETIME(0), session_last_used DATETIME(0));
 
+# INFORMATION #
+CREATE TABLE ACCOUNT_INFORMATION(account_id char(25), account_type char(25), account_level char(25), PRIMARY KEY(account_id));
+
