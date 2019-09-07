@@ -9,31 +9,34 @@ public class User {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Column(name="account_id")
-    private Integer user_id;
+    private Integer id;
     @Column(name="username")
     private String username;
     @Column(name="email")
     private String email;
     @Column(name="password")
     private String password;
-    @Column(name="salt")
-    private String salt;
+    @Column(name="salt_front")
+    private String salt_front;
+    @Column(name="salt_back")
+    private String salt_back;
 
-    public User(String username, String email, String password, String salt) {
+    public User(String username, String email, String password, String salt_front, String salt_back) {
         this.username = username;
         this.email = email;
         this.password = password;
-        this.salt = salt;
+        this.salt_front = salt_front;
+        this.salt_back = salt_back;
     }
 
     public User(){};
 
-    public Integer getUser_id() {
-        return user_id;
+    public Integer getid() {
+        return id;
     }
 
-    public void setUser_id(Integer user_id) {
-        this.user_id = user_id;
+    public void setid(Integer id) {
+        this.id = id;
     }
 
     public String getUsername() {
@@ -52,12 +55,12 @@ public class User {
         this.password = password;
     }
 
-    public String getSalt() {
-        return salt;
+    public String getSaltFront() {
+        return salt_front;
     }
 
-    public void setSalt(String salt) {
-        this.salt = salt;
+    public void setSaltFront(String salt_front) {
+        this.salt_front = salt_front;
     }
 
     public String getEmail() {
@@ -68,14 +71,23 @@ public class User {
         this.email = email;
     }
 
+    public String getSalt_back() {
+        return salt_back;
+    }
+
+    public void setSalt_back(String salt_back) {
+        this.salt_back = salt_back;
+    }
+
     @Override
     public String toString() {
         return "User{" +
-                "user_id=" + user_id +
+                "id=" + id +
                 ", username='" + username + '\'' +
                 ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
-                ", salt='" + salt + '\'' +
+                ", salt_front='" + salt_front + '\'' +
+                ", salt_back='" + salt_back + '\'' +
                 '}';
     }
 }
