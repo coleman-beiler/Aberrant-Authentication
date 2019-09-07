@@ -11,6 +11,8 @@ dependencies {
     compile("org.springframework.boot:spring-boot-devtools")
     compile("com.fasterxml.jackson.core:jackson-databind")
     compile("mysql:mysql-connector-java")
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
+    compile group: 'commons-codec', name: 'commons-codec', version: '1.13'
     testCompile("junit:junit")
 }
 
