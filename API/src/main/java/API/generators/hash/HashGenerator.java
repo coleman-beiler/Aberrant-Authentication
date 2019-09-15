@@ -1,4 +1,4 @@
-package API.Hash;
+package API.generators.hash;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
