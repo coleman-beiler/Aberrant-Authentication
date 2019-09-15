@@ -1,4 +1,4 @@
-package API.Salt;
+package API.generators.salt;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Component;

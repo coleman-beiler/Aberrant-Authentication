@@ -2,6 +2,8 @@
 
 ## Insert a user
 curl --header "Content-Type: application/json"   --request POST   --data '{"username":"coleman","password":"12345","email":"email@address.com"}'   http://localhost:8080/users/insert
+curl --header "Content-Type: application/json"   --request POST   --data '{"username":"colemon","password":"123456789ABCDEFG","email":"email@address.com"}'   http://localhost:8080/users/insert
+
 
 ## Update a user
 curl --header "Content-Type: application/json"   --request POST   --data '{"user_id":7,"username":"coleman123","password":"54321","salt":"abcd","email":"updated@address.com"}'   http://localhost:8080/users/update
