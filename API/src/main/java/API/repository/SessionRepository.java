@@ -11,5 +11,5 @@ public interface SessionRepository extends CrudRepository<Session, Integer> {
     Boolean existsBySessionToken(String sessionToken);
 
     @Transactional
-    Integer deleteBySessionToken(String sessionToken);
+    void deleteBySessionToken(String sessionToken);
 }

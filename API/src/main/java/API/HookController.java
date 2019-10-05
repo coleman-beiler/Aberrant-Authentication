@@ -37,10 +37,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.google.gson.Gson;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
+@RequestMapping(value = "/api/auth/v1")
 public class HookController {
 
     @Autowired
@@ -54,63 +55,115 @@ public class HookController {
     HashGenerator hashGenerator = new HashGenerator();
     SessionGenerator sessionGenerator = new SessionGenerator();
 
-    @GetMapping(path="/all")
+    @RequestMapping(value = "/all", method = RequestMethod.POST)
     public @ResponseBody
-    Iterable<User> getAllUsers() {
-        return userRepository.findAll();
+    ResponseEntity<Iterable<User>> getAllUsers(@RequestBody String jsonString) throws Exception {
+        JsonElement jsonElement = new JsonParser().parse(jsonString);
+        JsonObject jobject = jsonElement.getAsJsonObject();
+        String sessionToken = jobject.get("sessionToken").getAsString();
+        int requestNumber = jobject.get("requestNumber").getAsInt();
+
+        if(checkSession(sessionToken,requestNumber)) {
+            return new ResponseEntity(userRepository.findAll(), HttpStatus.OK);
+        } else {
+            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+    @RequestMapping(value = "/users/select/{username}", method = RequestMethod.POST)
+    public ResponseEntity<User> getSpecificUser(@RequestBody String jsonString, @PathVariable String username) throws Exception {
+        JsonElement jsonElement = new JsonParser().parse(jsonString);
+        JsonObject jobject = jsonElement.getAsJsonObject();
+        String sessionToken = jobject.get("sessionToken").getAsString();
+        int requestNumber = jobject.get("requestNumber").getAsInt();
+        if(checkSession(sessionToken, requestNumber)){
+            return new ResponseEntity(userRepository.findByUsername(username), HttpStatus.OK);
+        } else {
+            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+        }
     }
 
     @RequestMapping(value = "/users/insert", method = RequestMethod.POST)
-    public Integer insertUser(@RequestBody String jsonString) throws Exception {
+    public ResponseEntity<HttpStatus> insertUser(@RequestBody String jsonString) throws Exception {
         JsonElement jsonElement = new JsonParser().parse(jsonString);
         JsonObject jobject = jsonElement.getAsJsonObject();
-        String username = jobject.get("username").getAsString();
-        String email = jobject.get("email").getAsString();
-        String passwordOriginal = jobject.get("password").getAsString();
-        String salt_front = saltGenerator.generate();
-        String salt_back = saltGenerator.generate();
+        String sessionToken = jobject.get("sessionToken").getAsString();
+        int requestNumber = jobject.get("requestNumber").getAsInt();
 
-        String password = hashGenerator.generateHash(salt_front,passwordOriginal,salt_back);
+        if(checkSession(sessionToken,requestNumber)) {
+            String username = jobject.get("username").getAsString();
+            String email = jobject.get("email").getAsString();
+            String passwordOriginal = jobject.get("password").getAsString();
+            String salt_front = saltGenerator.generate();
+            String salt_back = saltGenerator.generate();
 
-        User user = new User(username, email, password, salt_front, salt_back);
-        List<User> userFound = userRepository.findByUsername(username);
+            String password = hashGenerator.generateHash(salt_front, passwordOriginal, salt_back);
 
-        if(userFound.size() == 0) {
-            userRepository.save(user);
-            return 200;
+            User user = new User(username, email, password, salt_front, salt_back);
+            List<User> userFound = userRepository.findByUsername(username);
+
+            if (userFound.size() == 0) {
+                userRepository.save(user);
+                return new ResponseEntity(HttpStatus.OK);
+            } else {
+                return new ResponseEntity(HttpStatus.CONFLICT);
+            }
         } else {
-            return 99;
+            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
         }
     }
 
     @RequestMapping(value = "/users/delete", method = RequestMethod.POST)
-    public Integer deleteUser(@RequestBody String jsonString) throws Exception {
+    public ResponseEntity<HttpStatus> deleteUser(@RequestBody String jsonString) throws Exception {
 
         JsonElement jsonElement = new JsonParser().parse(jsonString);
         JsonObject jobject = jsonElement.getAsJsonObject();
-        String username = jobject.get("username").getAsString();
-        userRepository.deleteByUsername(username);
-        return 200;
+        String sessionToken = jobject.get("sessionToken").getAsString();
+        int requestNumber = jobject.get("requestNumber").getAsInt();
+
+        if(checkSession(sessionToken,requestNumber)) {
+
+            String username = jobject.get("username").getAsString();
+            userRepository.deleteByUsername(username);
+            return new ResponseEntity(HttpStatus.OK);
+
+        } else {
+            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+        }
     }
 
     @RequestMapping(value = "/users/update", method = RequestMethod.POST)
-    public Integer changeUser(@RequestBody String jsonString) throws Exception {
+    public ResponseEntity<HttpStatus> changeUser(@RequestBody String jsonString) throws Exception {
         JsonElement jsonElement = new JsonParser().parse(jsonString);
         JsonObject jobject = jsonElement.getAsJsonObject();
-        int id = jobject.get("user_id").getAsInt();
-        String username = jobject.get("username").getAsString();
-        String email = jobject.get("email").getAsString();
-        String password = jobject.get("password").getAsString();
+        String sessionToken = jobject.get("sessionToken").getAsString();
+        int requestNumber = jobject.get("requestNumber").getAsInt();
 
-        User user = userRepository.findById(id).get(0);
+        if(checkSession(sessionToken,requestNumber)) {
 
-        if(!username.isEmpty()) { user.setUsername(username); }
-        if(!email.isEmpty()) { user.setEmail(email); }
-        if(!password.isEmpty()) { user.setPassword(password); }
+            int id = jobject.get("user_id").getAsInt();
+            String username = jobject.get("username").getAsString();
+            String email = jobject.get("email").getAsString();
+            String password = jobject.get("password").getAsString();
 
-        userRepository.save(user);
+            User user = userRepository.findById(id).get(0);
 
-        return 200;
+            if (!username.isEmpty()) {
+                user.setUsername(username);
+            }
+            if (!email.isEmpty()) {
+                user.setEmail(email);
+            }
+            if (!password.isEmpty()) {
+                user.setPassword(password);
+            }
+
+            userRepository.save(user);
+
+            return new ResponseEntity(HttpStatus.OK);
+        } else {
+            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+        }
     }
 
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
@@ -131,7 +184,20 @@ public class HookController {
         } else {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
+    }
 
+    @RequestMapping(value = "/sessions/all", method = RequestMethod.POST)
+    public ResponseEntity<Iterable<Session>> getAllSessions(@RequestBody String jsonString) throws Exception {
+        JsonElement jsonElement = new JsonParser().parse(jsonString);
+        JsonObject jobject = jsonElement.getAsJsonObject();
+        String sessionToken = jobject.get("sessionToken").getAsString();
+        int requestNumber = jobject.get("requestNumber").getAsInt();
+
+        if(checkSession(sessionToken,requestNumber)) {
+            return new ResponseEntity(sessionRepository.findAll(), HttpStatus.OK);
+        } else {
+            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+        }
     }
 
     @RequestMapping(value = "/checkSession", method = RequestMethod.POST)
@@ -143,6 +209,8 @@ public class HookController {
             int realRequestNumber = session.getRequestNumber();
             // Check that the request number is somewhere near where the database thinks it should be.
             if(requestNumber >= (realRequestNumber - 10) && requestNumber <= (realRequestNumber + 10)) {
+                LocalDateTime currentTime = LocalDateTime.now();
+                session.setSessionLastUsed(currentTime);
                 session.setRequestNumber(session.getRequestNumber() + 1);
                 sessionRepository.save(session);
                 return true;
@@ -151,6 +219,21 @@ public class HookController {
             }
         } else {
             return false;
+        }
+    }
+
+    @RequestMapping(value = "logout", method = RequestMethod.POST)
+    public ResponseEntity<String> logout (@RequestBody String jsonString) throws Exception{
+        JsonElement jsonElement = new JsonParser().parse(jsonString);
+        JsonObject jobject = jsonElement.getAsJsonObject();
+        String sessionToken = jobject.get("sessionToken").getAsString();
+        int requestNumber = jobject.get("requestNumber").getAsInt();
+
+        if(checkSession(sessionToken,requestNumber)) {
+            sessionRepository.deleteBySessionToken(sessionToken);
+            return new ResponseEntity(HttpStatus.OK);
+        } else {
+            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
         }
     }
 
