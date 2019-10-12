@@ -75,7 +75,7 @@ ___
 
 ### Contact & Contributing
 
-You can currently reach me at ***beiler@coleman@gmail.com***. <br />
+You can currently reach me at ***beiler.coleman@gmail.com***. <br />
 I've got a lot of ideas around security and I would love to hear your's too. <br />
 Feel free to reach out for any support / questions.
 
