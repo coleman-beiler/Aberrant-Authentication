@@ -1,0 +1,130 @@
+databaseChangeLog:
+  - preConditions:
+    - runningAs:
+        username: root
+
+  - changeSet:
+      id: 1
+      author: Coleman
+      changes:
+        - createTable:
+            tableName: ACCOUNT_LOGIN_CREDENTIALS
+            columns:
+              - column:
+                  name: account_id
+                  type: int
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: username
+                  type: varchar(50)
+              - column:
+                  name: email
+                  type: varchar(50)
+              - column:
+                  name: password
+                  type: varchar(100)
+              - column:
+                  name: salt_front
+                  type: varchar(25)
+              - column:
+                  name: salt_back
+                  type: varchar(25)
+
+  - changeSet:
+      id: 2
+      author: Coleman
+      changes:
+        - createTable:
+            tableName: ACCOUNT_SESSION_TRACKING
+            columns:
+              - column:
+                  name: session_token
+                  type: char(100)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: account_id
+                  type: int
+                  constraints:
+                    onDelete: CASCADE
+                    foreignKeyName: fk_account_id_login
+                    referencedColumnNames: account_id
+                    referencedTableName: ACCOUNT_LOGIN_CREDENTIALS
+              - column:
+                  name: request_number
+                  type: int
+              - column:
+                  name: session_start_time
+                  type: dateTime
+              - column:
+                  name: session_last_used
+                  type: dateTime
+
+  - changeSet:
+      id: 3
+      author: Coleman
+      changes:
+        - createTable:
+            tableName: GROUP_NAMES
+            columns:
+              - column:
+                  name: group_id
+                  type: int
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: group_name
+                  type: varchar(25)
+                  constraints:
+                    unique: true
+  - changeSet:
+      id: 4
+      author: Coleman
+      changes:
+        - createTable:
+            tableName: ACCOUNT_GROUPS
+            columns:
+              - column:
+                  name: account_id
+                  type: int
+                  constraints:
+                    onDelete: CASCADE
+                    foreignKeyName: fk_account_id_groups
+                    referencedColumnNames: account_id
+                    referencedTableName: ACCOUNT_LOGIN_CREDENTIALS
+              - column:
+                  name: group_name
+                  type: varchar(25)
+                  constraints:
+                    onDelete: CASCADE
+                    foreignKeyName: fk_group_name_groups
+                    referencedColumnNames: group_name
+                    referencedTableName: GROUP_NAMES
+
+  - changeSet:
+      id: 15
+      author: Coleman
+      changes:
+        - insert:
+            tableName: ACCOUNT_LOGIN_CREDENTIALS
+            columns:
+              - column:
+                  name: username
+                  value: admin
+              - column:
+                  name: email
+                  value: admin@admin.com
+              - column:
+                  name: password
+                  value: c824233356d4223695cc9c8c834c272f70e84419cff5f3faaa4048e17e95837f
+              - column:
+                  name: salt_front
+                  value: Sh4uzo5so2gd
+              - column:
+                  name: salt_back
+                  value: kMpBfEm1EwGnBTPOikjH9

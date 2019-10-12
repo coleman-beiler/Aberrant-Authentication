@@ -1,5 +1,6 @@
-package API;
+package API.repository;
 
+import API.persistance.model.User;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;

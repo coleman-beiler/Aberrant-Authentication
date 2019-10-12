@@ -26,8 +26,12 @@ package API;
 import API.generators.hash.HashGenerator;
 import API.generators.salt.SaltGenerator;
 import API.generators.session.SessionGenerator;
+import API.persistance.model.Group;
 import API.persistance.model.Session;
+import API.persistance.model.User;
+import API.repository.GroupRepository;
 import API.repository.SessionRepository;
+import API.repository.UserRepository;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -38,7 +42,9 @@ import org.springframework.web.bind.annotation.*;
 import com.google.gson.Gson;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping(value = "/api/auth/v1")
@@ -50,12 +56,15 @@ public class HookController {
     @Autowired
     private SessionRepository sessionRepository;
 
+    @Autowired
+    private GroupRepository groupRepository;
+
     Gson gson = new Gson();
     SaltGenerator saltGenerator = new SaltGenerator();
     HashGenerator hashGenerator = new HashGenerator();
     SessionGenerator sessionGenerator = new SessionGenerator();
 
-    @RequestMapping(value = "/all", method = RequestMethod.POST)
+    @RequestMapping(value = "/users/select/all", method = RequestMethod.POST)
     public @ResponseBody
     ResponseEntity<Iterable<User>> getAllUsers(@RequestBody String jsonString) throws Exception {
         JsonElement jsonElement = new JsonParser().parse(jsonString);
@@ -96,10 +105,11 @@ public class HookController {
             String passwordOriginal = jobject.get("password").getAsString();
             String salt_front = saltGenerator.generate();
             String salt_back = saltGenerator.generate();
+            Set<Group> groups = new HashSet<Group>();
 
             String password = hashGenerator.generateHash(salt_front, passwordOriginal, salt_back);
 
-            User user = new User(username, email, password, salt_front, salt_back);
+            User user = new User(username, email, password, groups, salt_front, salt_back);
             List<User> userFound = userRepository.findByUsername(username);
 
             if (userFound.size() == 0) {
@@ -166,6 +176,54 @@ public class HookController {
         }
     }
 
+    @RequestMapping(value = "/groups/insert", method = RequestMethod.POST)
+    public ResponseEntity<HttpStatus> addGroup(@RequestBody String jsonString) throws Exception {
+        JsonElement jsonElement = new JsonParser().parse(jsonString);
+        JsonObject jobject = jsonElement.getAsJsonObject();
+        String sessionToken = jobject.get("sessionToken").getAsString();
+        int requestNumber = jobject.get("requestNumber").getAsInt();
+        String groupName = jobject.get("groupName").getAsString();
+
+        if(checkSession(sessionToken,requestNumber)) {
+            Group group = new Group();
+            group.setGroupName(groupName);
+            groupRepository.save(group);
+            return new ResponseEntity(HttpStatus.OK);
+        } else {
+            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+    @RequestMapping(value = "/groups/delete", method = RequestMethod.POST)
+    public ResponseEntity<HttpStatus> deleteGroup(@RequestBody String jsonString) throws Exception {
+        JsonElement jsonElement = new JsonParser().parse(jsonString);
+        JsonObject jobject = jsonElement.getAsJsonObject();
+        String sessionToken = jobject.get("sessionToken").getAsString();
+        int requestNumber = jobject.get("requestNumber").getAsInt();
+        String groupName = jobject.get("groupName").getAsString();
+
+        if(checkSession(sessionToken,requestNumber)) {
+            groupRepository.deleteByGroupName(groupName);
+            return new ResponseEntity(HttpStatus.OK);
+        } else {
+            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+    @RequestMapping(value = "/groups/select/all", method = RequestMethod.POST)
+    public ResponseEntity<Iterable<Group>> getGroups(@RequestBody String jsonString) throws Exception {
+        JsonElement jsonElement = new JsonParser().parse(jsonString);
+        JsonObject jobject = jsonElement.getAsJsonObject();
+        String sessionToken = jobject.get("sessionToken").getAsString();
+        int requestNumber = jobject.get("requestNumber").getAsInt();
+
+        if(checkSession(sessionToken,requestNumber)) {
+            return new ResponseEntity(groupRepository.findAll(), HttpStatus.OK);
+        } else {
+            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+        }
+    }
+
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
     public ResponseEntity<Session> authenticateUser(@RequestBody String jsonString, @RequestHeader("host") String host) throws Exception {
         JsonElement jsonElement = new JsonParser().parse(jsonString);
@@ -186,7 +244,7 @@ public class HookController {
         }
     }
 
-    @RequestMapping(value = "/sessions/all", method = RequestMethod.POST)
+    @RequestMapping(value = "/sessions/select/all", method = RequestMethod.POST)
     public ResponseEntity<Iterable<Session>> getAllSessions(@RequestBody String jsonString) throws Exception {
         JsonElement jsonElement = new JsonParser().parse(jsonString);
         JsonObject jobject = jsonElement.getAsJsonObject();
@@ -236,24 +294,6 @@ public class HookController {
             return new ResponseEntity(HttpStatus.UNAUTHORIZED);
         }
     }
-
-    @RequestMapping(value = "/test", method = RequestMethod.POST)
-    public void testFunction(@RequestBody String jsonString) throws Exception {
-        JsonElement jsonElement = new JsonParser().parse(jsonString);
-        JsonObject jobject = jsonElement.getAsJsonObject();
-        String sessionToken = jobject.get("sessionToken").getAsString();
-        int requestNumber = jobject.get("requestNumber").getAsInt();
-
-        System.out.println("Session Token: "+sessionToken);
-        System.out.println("Request Number: "+requestNumber);
-
-        System.out.println("Are we still authenticated?: "+checkSession(sessionToken,requestNumber));
-
-    }
-
-
-
-
 
 }
 
