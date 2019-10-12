@@ -1,6 +1,7 @@
-package API;
+package API.persistance.model;
 
 import javax.persistence.*;
+import java.util.Set;
 
 @Entity
 @Table(name="ACCOUNT_LOGIN_CREDENTIALS")
@@ -21,12 +22,21 @@ public class User {
     @Column(name="salt_back")
     private String salt_back;
 
-    public User(String username, String email, String password, String salt_front, String salt_back) {
+    @ManyToMany
+    @JoinTable(
+            name = "ACCOUNT_GROUPS",
+            joinColumns = @JoinColumn(name = "account_id"),
+            inverseJoinColumns = @JoinColumn(name = "group_name"))
+    Set<Group> groups;
+
+
+    public User(String username, String email, String password, Set<Group> groups, String salt_front, String salt_back) {
         this.username = username;
         this.email = email;
         this.password = password;
         this.salt_front = salt_front;
         this.salt_back = salt_back;
+        this.groups = groups;
     }
 
     public User(){};
@@ -79,6 +89,14 @@ public class User {
         this.salt_back = salt_back;
     }
 
+    public Set<Group> getGroups() {
+        return groups;
+    }
+
+    public void setGroups(Set<Group> groups){
+        this.groups = groups;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -88,6 +106,7 @@ public class User {
                 ", password='" + password + '\'' +
                 ", salt_front='" + salt_front + '\'' +
                 ", salt_back='" + salt_back + '\'' +
+                ", groups='" + groups + '\'' +
                 '}';
     }
 }

@@ -9,5 +9,7 @@ CREATE TABLE ACCOUNT_LOGIN_CREDENTIALS(account_id INT NOT NULL AUTO_INCREMENT, u
 CREATE TABLE ACCOUNT_SESSION_TRACKING(session_token char(100), account_id INT, request_number INT, session_start_time DATETIME(0), session_last_used DATETIME(0), FOREIGN KEY(account_id) REFERENCES ACCOUNT_LOGIN_CREDENTIALS(account_id));
 
 # INFORMATION #
-CREATE TABLE ACCOUNT_GROUPS(account_id INT, group_name char(25), PRIMARY KEY(account_id), FOREIGN KEY(account_id) REFERENCES ACCOUNT_LOGIN_CREDENTIALS(account_id));
+CREATE TABLE ACCOUNT_GROUPS(account_id INT, group_name char(25), PRIMARY KEY(account_id), FOREIGN KEY(account_id) REFERENCES ACCOUNT_LOGIN_CREDENTIALS(account_id), FOREIGN KEY(group_name) REFERENCES GROUP_NAMES(group_name));
+
+CREATE TABLE GROUP_NAMES(group_id INT NOT NULL AUTO_INCREMENT, group_name char(25) UNIQUE, PRIMARY KEY(group_id));
 
