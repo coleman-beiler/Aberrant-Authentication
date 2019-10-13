@@ -56,20 +56,21 @@ ___
 
 ### Endpoints
 
-| URL | Method | Request Body | Expected Response | Description |
+| URL | Method | Request Body / Headers | Expected Response | Description |
 | :--- | :--- | :--- | :--- | :--- |
 | /api/auth/v1/authenticate | POST | username, password | Session Object | Checks the database for a matching username & password combination |
 | /api/auth/v1/checkSession | POST | sessionToken, requestNumber | Boolean | Checks whether the requested session is still active in the system |
 | /api/auth/v1/logout | POST | sessionToken, requestNumber | HttpStatus Object | Ends the requested session |
-| /api/auth/v1/users/select/all |  POST  | sessionToken, requestNumber | Array of User Objects | Returns all user information currently stored in the database |
-| /api/auth/v1/users/select/{username} | POST | sessionToken, requestNumber  | User Object | Returns specific user based on {username} path variable |
+| /api/auth/v1/users/select/all |  GET  | sessionToken, requestNumber | Array of User Objects | Returns all user information currently stored in the database |
+| /api/auth/v1/users/select/{username} | GET | sessionToken, requestNumber  | User Object | Returns specific user based on {username} path variable |
 | /api/auth/v1/users/insert | POST | sessionToken, requestNumber, username, email, password | HttpStatus Object | Inserts a user into the database |
 | /api/auth/v1/users/delete | POST | sessionToken, requestNumber, username | HttpStatus Object | Removes a user from the database |
 | /api/auth/v1/users/update | POST | sessionToken, requestNumber, user_id, username, email, password | HttpStatus Object | Updates a user in the database |
-| /api/auth/v1/groups/select/all | POST | sessionToken, requestNumber | Array of Group Objects | Returns all groups currently stored in the database |
+| /api/auth/v1/groups/select/ | GET | sessionToken, requestNumber | Array of Group Objects | Returns all groups currently stored in the database |
+| /api/auth/v1/groups/select/{groupName} | GET | sessionToken, requestNumber | Group Object | Returns specific group currently stored in the database |
 | /api/auth/v1/groups/insert | POST | sessionToken, requestNumber, groupName | HttpStatus Object | Inserts a group into the database |
 | /api/auth/v1/groups/delete | POST | sessionToken, requestNumber, groupName | HttpStatus Object | Removes a group from the database |
-| /api/auth/v1/sessions/select/all | POST | sessionToken, requestNumber | Array of Session Objects | Returns all sessions currently active in the system |
+| /api/auth/v1/sessions/select/all | GET | sessionToken, requestNumber | Array of Session Objects | Returns all sessions currently active in the system |
 
 ___
 

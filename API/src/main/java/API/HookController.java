@@ -3,22 +3,6 @@
  *  Aberrant - Authentication
  *  Free authentication service to use with MySQL.
  *
- *  Below will describe current endpoints and their behavior.
- *
- *  Current Hooks:
- *  N/A
- *
- *  Desired Hooks:
- *
- *  (/user/add) Add Account.
- *  (/user/delete) Delete Account.
- *  (/user/update) Update Account.
- *  (/user/select/${name}) Select Specific Account.
- *  (/user/select/all) Select All Accounts.
- *
- *
- *
- *
  */
 
 package API;
@@ -44,6 +28,8 @@ import com.google.gson.Gson;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 @RestController
@@ -60,40 +46,31 @@ public class HookController {
     private GroupRepository groupRepository;
 
     Gson gson = new Gson();
-    SaltGenerator saltGenerator = new SaltGenerator();
-    HashGenerator hashGenerator = new HashGenerator();
-    SessionGenerator sessionGenerator = new SessionGenerator();
+    private SaltGenerator saltGenerator = new SaltGenerator();
+    private HashGenerator hashGenerator = new HashGenerator();
+    private SessionGenerator sessionGenerator = new SessionGenerator();
 
-    @RequestMapping(value = "/users/select/all", method = RequestMethod.POST)
-    public @ResponseBody
-    ResponseEntity<Iterable<User>> getAllUsers(@RequestBody String jsonString) throws Exception {
-        JsonElement jsonElement = new JsonParser().parse(jsonString);
-        JsonObject jobject = jsonElement.getAsJsonObject();
-        String sessionToken = jobject.get("sessionToken").getAsString();
-        int requestNumber = jobject.get("requestNumber").getAsInt();
-
-        if(checkSession(sessionToken,requestNumber)) {
-            return new ResponseEntity(userRepository.findAll(), HttpStatus.OK);
-        } else {
-            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
-        }
+    public HookController() {
     }
 
-    @RequestMapping(value = "/users/select/{username}", method = RequestMethod.POST)
-    public ResponseEntity<User> getSpecificUser(@RequestBody String jsonString, @PathVariable String username) throws Exception {
-        JsonElement jsonElement = new JsonParser().parse(jsonString);
-        JsonObject jobject = jsonElement.getAsJsonObject();
-        String sessionToken = jobject.get("sessionToken").getAsString();
-        int requestNumber = jobject.get("requestNumber").getAsInt();
-        if(checkSession(sessionToken, requestNumber)){
-            return new ResponseEntity(userRepository.findByUsername(username), HttpStatus.OK);
+    @RequestMapping(value = { "/users/select", "/users/select/{username}" }, method = RequestMethod.GET)
+    public @ResponseBody
+    ResponseEntity<Iterable<User>> getAllUsers(@RequestHeader Map<String, String> headers, @PathVariable Optional<String> username) {
+        String sessionToken = headers.get("sessiontoken");
+        int requestNumber = Integer.valueOf(headers.get("requestnumber"));
+        if(checkSession(sessionToken,requestNumber)) {
+            if(username.isPresent()) {
+                return new ResponseEntity<>(userRepository.findByUsername(username.get()), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(userRepository.findAll(), HttpStatus.OK);
+            }
         } else {
-            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
     }
 
     @RequestMapping(value = "/users/insert", method = RequestMethod.POST)
-    public ResponseEntity<HttpStatus> insertUser(@RequestBody String jsonString) throws Exception {
+    public ResponseEntity<HttpStatus> insertUser(@RequestBody String jsonString) {
         JsonElement jsonElement = new JsonParser().parse(jsonString);
         JsonObject jobject = jsonElement.getAsJsonObject();
         String sessionToken = jobject.get("sessionToken").getAsString();
@@ -114,17 +91,17 @@ public class HookController {
 
             if (userFound.size() == 0) {
                 userRepository.save(user);
-                return new ResponseEntity(HttpStatus.OK);
+                return new ResponseEntity<>(HttpStatus.OK);
             } else {
-                return new ResponseEntity(HttpStatus.CONFLICT);
+                return new ResponseEntity<>(HttpStatus.CONFLICT);
             }
         } else {
-            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
     }
 
     @RequestMapping(value = "/users/delete", method = RequestMethod.POST)
-    public ResponseEntity<HttpStatus> deleteUser(@RequestBody String jsonString) throws Exception {
+    public ResponseEntity<HttpStatus> deleteUser(@RequestBody String jsonString) {
 
         JsonElement jsonElement = new JsonParser().parse(jsonString);
         JsonObject jobject = jsonElement.getAsJsonObject();
@@ -135,15 +112,15 @@ public class HookController {
 
             String username = jobject.get("username").getAsString();
             userRepository.deleteByUsername(username);
-            return new ResponseEntity(HttpStatus.OK);
+            return new ResponseEntity<>(HttpStatus.OK);
 
         } else {
-            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
     }
 
     @RequestMapping(value = "/users/update", method = RequestMethod.POST)
-    public ResponseEntity<HttpStatus> changeUser(@RequestBody String jsonString) throws Exception {
+    public ResponseEntity<HttpStatus> changeUser(@RequestBody String jsonString) {
         JsonElement jsonElement = new JsonParser().parse(jsonString);
         JsonObject jobject = jsonElement.getAsJsonObject();
         String sessionToken = jobject.get("sessionToken").getAsString();
@@ -165,19 +142,22 @@ public class HookController {
                 user.setEmail(email);
             }
             if (!password.isEmpty()) {
-                user.setPassword(password);
+                String salt_front = saltGenerator.generate();
+                String salt_back = saltGenerator.generate();
+                String newPassword = hashGenerator.generateHash(salt_front, password, salt_back);
+                user.setPassword(newPassword);
             }
 
             userRepository.save(user);
 
-            return new ResponseEntity(HttpStatus.OK);
+            return new ResponseEntity<>(HttpStatus.OK);
         } else {
-            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
     }
 
     @RequestMapping(value = "/groups/insert", method = RequestMethod.POST)
-    public ResponseEntity<HttpStatus> addGroup(@RequestBody String jsonString) throws Exception {
+    public ResponseEntity<HttpStatus> addGroup(@RequestBody String jsonString) {
         JsonElement jsonElement = new JsonParser().parse(jsonString);
         JsonObject jobject = jsonElement.getAsJsonObject();
         String sessionToken = jobject.get("sessionToken").getAsString();
@@ -188,14 +168,14 @@ public class HookController {
             Group group = new Group();
             group.setGroupName(groupName);
             groupRepository.save(group);
-            return new ResponseEntity(HttpStatus.OK);
+            return new ResponseEntity<>(HttpStatus.OK);
         } else {
-            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
     }
 
     @RequestMapping(value = "/groups/delete", method = RequestMethod.POST)
-    public ResponseEntity<HttpStatus> deleteGroup(@RequestBody String jsonString) throws Exception {
+    public ResponseEntity<HttpStatus> deleteGroup(@RequestBody String jsonString) {
         JsonElement jsonElement = new JsonParser().parse(jsonString);
         JsonObject jobject = jsonElement.getAsJsonObject();
         String sessionToken = jobject.get("sessionToken").getAsString();
@@ -204,28 +184,29 @@ public class HookController {
 
         if(checkSession(sessionToken,requestNumber)) {
             groupRepository.deleteByGroupName(groupName);
-            return new ResponseEntity(HttpStatus.OK);
+            return new ResponseEntity<>(HttpStatus.OK);
         } else {
-            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
     }
 
-    @RequestMapping(value = "/groups/select/all", method = RequestMethod.POST)
-    public ResponseEntity<Iterable<Group>> getGroups(@RequestBody String jsonString) throws Exception {
-        JsonElement jsonElement = new JsonParser().parse(jsonString);
-        JsonObject jobject = jsonElement.getAsJsonObject();
-        String sessionToken = jobject.get("sessionToken").getAsString();
-        int requestNumber = jobject.get("requestNumber").getAsInt();
-
+    @RequestMapping(value = {"/groups/select", "/groups/select/{groupName}"}, method = RequestMethod.GET)
+    public ResponseEntity getGroups(@RequestHeader Map<String,String> headers, @PathVariable Optional<String> groupName) {
+        String sessionToken = headers.get("sessiontoken");
+        int requestNumber = Integer.valueOf(headers.get("requestnumber"));
         if(checkSession(sessionToken,requestNumber)) {
-            return new ResponseEntity(groupRepository.findAll(), HttpStatus.OK);
+            if(groupName.isPresent()){
+                return new ResponseEntity(groupRepository.findByGroupName(groupName.get()), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(groupRepository.findAll(), HttpStatus.OK);
+            }
         } else {
-            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
     }
 
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
-    public ResponseEntity<Session> authenticateUser(@RequestBody String jsonString, @RequestHeader("host") String host) throws Exception {
+    public ResponseEntity<Session> authenticateUser(@RequestBody String jsonString, @RequestHeader("host") String host) {
         JsonElement jsonElement = new JsonParser().parse(jsonString);
         JsonObject jobject = jsonElement.getAsJsonObject();
         String username = jobject.get("username").getAsString();
@@ -244,17 +225,14 @@ public class HookController {
         }
     }
 
-    @RequestMapping(value = "/sessions/select/all", method = RequestMethod.POST)
-    public ResponseEntity<Iterable<Session>> getAllSessions(@RequestBody String jsonString) throws Exception {
-        JsonElement jsonElement = new JsonParser().parse(jsonString);
-        JsonObject jobject = jsonElement.getAsJsonObject();
-        String sessionToken = jobject.get("sessionToken").getAsString();
-        int requestNumber = jobject.get("requestNumber").getAsInt();
-
+    @RequestMapping(value = "/sessions/select/all", method = RequestMethod.GET)
+    public ResponseEntity<Iterable<Session>> getAllSessions(@RequestHeader Map<String,String> headers) {
+        String sessionToken = headers.get("sessiontoken");
+        int requestNumber = Integer.valueOf(headers.get("requestnumber"));
         if(checkSession(sessionToken,requestNumber)) {
-            return new ResponseEntity(sessionRepository.findAll(), HttpStatus.OK);
+            return new ResponseEntity<>(sessionRepository.findAll(), HttpStatus.OK);
         } else {
-            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
     }
 
@@ -281,7 +259,7 @@ public class HookController {
     }
 
     @RequestMapping(value = "logout", method = RequestMethod.POST)
-    public ResponseEntity<String> logout (@RequestBody String jsonString) throws Exception{
+    public ResponseEntity logout (@RequestBody String jsonString){
         JsonElement jsonElement = new JsonParser().parse(jsonString);
         JsonObject jobject = jsonElement.getAsJsonObject();
         String sessionToken = jobject.get("sessionToken").getAsString();
