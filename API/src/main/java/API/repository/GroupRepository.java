@@ -11,6 +11,7 @@ import java.util.List;
 @Component
 public interface GroupRepository extends CrudRepository<Group, Integer> {
 
+    Group findByGroupName(String groupName);
     @Transactional
     Integer deleteById(String Id);
     @Transactional
