@@ -77,26 +77,97 @@ In this example, we will be using javascript to request information on a specifi
     console.error(error);
   });
 ```
-
 ___
 
 ### Endpoints
 
-| URL | Method | Request Body / Headers | Expected Response | Description |
-| :--- | :--- | :--- | :--- | :--- |
-| /api/auth/v1/authenticate | POST | username, password | Session Object | Checks the database for a matching username & password combination |
-| /api/auth/v1/checkSession | POST | sessionToken, requestNumber | Boolean | Checks whether the requested session is still active in the system |
-| /api/auth/v1/logout | POST | sessionToken, requestNumber | HttpStatus Object | Ends the requested session |
-| /api/auth/v1/users/select/all |  GET  | sessionToken, requestNumber | Array of User Objects | Returns all user information currently stored in the database |
-| /api/auth/v1/users/select/{username} | GET | sessionToken, requestNumber  | User Object | Returns specific user based on {username} path variable |
-| /api/auth/v1/users/insert | POST | sessionToken, requestNumber, username, email, password | HttpStatus Object | Inserts a user into the database |
-| /api/auth/v1/users/delete | POST | sessionToken, requestNumber, username | HttpStatus Object | Removes a user from the database |
-| /api/auth/v1/users/update | POST | sessionToken, requestNumber, user_id, username, email, password | HttpStatus Object | Updates a user in the database |
-| /api/auth/v1/groups/select/ | GET | sessionToken, requestNumber | Array of Group Objects | Returns all groups currently stored in the database |
-| /api/auth/v1/groups/select/{groupName} | GET | sessionToken, requestNumber | Group Object | Returns specific group currently stored in the database |
-| /api/auth/v1/groups/insert | POST | sessionToken, requestNumber, groupName | HttpStatus Object | Inserts a group into the database |
-| /api/auth/v1/groups/delete | POST | sessionToken, requestNumber, groupName | HttpStatus Object | Removes a group from the database |
-| /api/auth/v1/sessions/select/all | GET | sessionToken, requestNumber | Array of Session Objects | Returns all sessions currently active in the system |
+URL: /api/auth/v1/authenticate
+  * Method: POST
+  * Request Body: username, password
+  * Request Headers: N/A
+  * Response Body: Session Object
+  * Response Headers: N/A
+  * Description: Checks the database for a matching username & password combination and returns a session to the client
+  ***
+URL: /api/auth/v1/checkSession
+  * Method: POST
+  * Request Body: sessionToken, refreshToken, requestNumber
+  * Request Headers: N/A
+  * Response Body: sessionResponse Object ('answer' -> Boolean, 'refreshToken' -> String)
+  * Response Headers: N/A
+  * Description: Checks whether the requested session is still active in the system
+  ***
+URL: /api/auth/v1/logout
+  * Method: POST
+  * Request Body: sessionToken, refreshToken, requestNumber
+  * Request Headers: N/A
+  * Response Body: N/A
+  * Response Headers: N/A
+  * Description: Ends the requested session
+  ***
+URL: /api/auth/v1/users/select, /api/auth/v1/users/select/{username}
+  * Method: GET
+  * Request Body: N/A
+  * Request Headers: sessionToken, refreshToken requestNumber
+  * Response Body: Array of User Objects
+  * Response Headers: refreshToken
+  * Description: Returns all user information currently stored in the database unless a username is specified
+  ***
+URL: /api/auth/v1/users/insert
+  * Method: POST
+  * Request Body: sessionToken, refreshToken, requestNumber, username, email, password
+  * Request Headers: N/A
+  * Response Body: N/A
+  * Response Headers: refreshToken
+  * Description:  Inserts a user into the database
+  ***
+URL: /api/auth/v1/users/delete 
+  * Method: POST
+  * Request Body: sessionToken, refreshToken, requestNumber, username
+  * Request Headers: N/A
+  * Response Body: N/A
+  * Response Headers: refreshToken
+  * Description: Removes a user from the database
+  ***
+URL: /api/auth/v1/users/update
+  * Method: POST
+  * Request Body: sessionToken, refreshToken, requestNumber, user_id, username, email, password
+  * Request Headers: N/A
+  * Response Body: N/A
+  * Response Headers: refreshToken
+  * Description: Updates a user currently in the database
+  ***
+URL: /api/auth/v1/groups/select, /api/auth/v1/groups/select/{groupName}
+  * Method: GET
+  * Request Body: N/A
+  * Request Headers: sessionToken, refreshToken, requestNumber
+  * Response Body: Array of Group Objects
+  * Response Headers: refreshToken
+  * Description: Returns all group information currently stored in the database unless a group name is specified
+  ***
+URL: /api/auth/v1/groups/insert 
+  * Method: POST
+  * Request Body: sessionToken, refreshToken, requestNumber, groupName
+  * Request Headers: N/A
+  * Response Body: N/A
+  * Response Headers: refreshToken
+  * Description: Inserts a group into the database
+  ***
+URL: /api/auth/v1/groups/delete
+  * Method: POST
+  * Request Body: sessionToken, refreshToken, requestNumber, groupName
+  * Request Headers: N/A
+  * Response Body: N/A
+  * Response Headers: refreshToken
+  * Description: removes a group from the database
+  ***
+URL: /api/auth/v1/sessions/select/all
+  * Method: GET
+  * Request Body: N/A
+  * Request Headers: sessionToken, refreshToken, requestNumber
+  * Response Body: Array of Session Objects
+  * Response Headers: refreshToken
+  * Description: Returns all sessions currently active in the system
 
 ___
 
