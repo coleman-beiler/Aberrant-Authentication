@@ -55,6 +55,9 @@ databaseChangeLog:
                     referencedColumnNames: account_id
                     referencedTableName: ACCOUNT_LOGIN_CREDENTIALS
               - column:
+                  name: refresh_token
+                  type: char(100)
+              - column:
                   name: request_number
                   type: int
               - column:
