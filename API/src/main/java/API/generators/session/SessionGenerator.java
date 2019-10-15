@@ -1,5 +1,6 @@
 package API.generators.session;
 
+import API.generators.refresh.RefreshGenerator;
 import API.persistance.model.Session;
 import org.apache.commons.codec.digest.DigestUtils;
 
@@ -10,7 +11,7 @@ import java.util.Date;
 public class SessionGenerator {
 
     public Session generateSession(int accountId, String username, String host) {
-
+        RefreshGenerator refreshGenerator = new RefreshGenerator();
         Date now = new Date();
         LocalDateTime timeForDB = LocalDateTime.now();
         SimpleDateFormat frontDate = new SimpleDateFormat("EyyMMddHHmmss");
@@ -23,8 +24,8 @@ public class SessionGenerator {
         */
         String valueToHash = host.concat(timeForDB.toString()).concat(username);
         String sessionToken = frontDate.format(now).concat(DigestUtils.sha256Hex(valueToHash));
+        String refreshToken = refreshGenerator.generate();
 
-        Session session = new Session(sessionToken, accountId, 1, timeForDB, timeForDB);
-        return session;
+        return new Session(sessionToken, accountId, refreshToken, 1, timeForDB, timeForDB);
     }
 }

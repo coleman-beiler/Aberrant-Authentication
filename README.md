@@ -54,6 +54,32 @@ That's it on the deployment! There is a little bit more you should know though.
 
 ___
 
+### Example Usage
+
+In this example, we will be using javascript to request information on a specific user. It's important to note that this example assumes you've already authenticated.
+
+```javascript
+  fetch('/api/auth/v1/users/select/user', {
+    method: 'GET',
+    headers: {
+      'sessionToken': localStorage.sessionToken,
+      'refreshToken': localStorage.refreshToken,
+      'requestNumber': localStorage.requestNumber
+    }
+  }).then((result) => {
+    localStorage.refreshToken = result.headers.get("refreshtoken");
+    return result.json();
+  }).then((data) => {
+    let user = data[0];
+    localStorage.requestNumber++;
+    console.log("Found the user: "+user);
+  }).catch((error) => {
+    console.error(error);
+  });
+```
+
+___
+
 ### Endpoints
 
 | URL | Method | Request Body / Headers | Expected Response | Description |

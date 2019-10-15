@@ -20,6 +20,8 @@ public class Session {
     private String sessionToken;
     @Column(name="account_id")
     private Integer accountId;
+    @Column(name="refresh_token")
+    private String refreshToken;
     @Column(name="request_number")
     private Integer requestNumber;
     @Column(name="session_start_time")
@@ -27,9 +29,10 @@ public class Session {
     @Column(name="session_last_used")
     private LocalDateTime sessionLastUsed;
 
-    public Session(String sessionToken, Integer accountId, Integer requestNumber, LocalDateTime sessionStartTime, LocalDateTime sessionLastUsed) {
+    public Session(String sessionToken, Integer accountId,String refreshToken, Integer requestNumber, LocalDateTime sessionStartTime, LocalDateTime sessionLastUsed) {
         this.sessionToken = sessionToken;
         this.accountId = accountId;
+        this.refreshToken = refreshToken;
         this.requestNumber = requestNumber;
         this.sessionStartTime = sessionStartTime;
         this.sessionLastUsed = sessionLastUsed;
@@ -77,11 +80,20 @@ public class Session {
         this.sessionLastUsed = sessionLastUsed;
     }
 
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
     @Override
     public String toString() {
         return "Session{" +
                 "sessionToken='" + sessionToken + '\'' +
                 ", accountId=" + accountId +
+                ", refreshToken='" + refreshToken + '\'' +
                 ", requestNumber=" + requestNumber +
                 ", sessionStartTime=" + sessionStartTime +
                 ", sessionLastUsed=" + sessionLastUsed +

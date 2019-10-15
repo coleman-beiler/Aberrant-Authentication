@@ -1,16 +1,13 @@
-package API.generators.salt;
+package API.generators.refresh;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.springframework.stereotype.Component;
 
 import java.util.Random;
 
-@Component
-public class SaltGenerator {
-
+public class RefreshGenerator {
     public String generate() {
         Random random = new Random();
-        int length = random.nextInt(15)+10;
+        int length = random.nextInt(50)+25;
         return RandomStringUtils.random(length,true,true);
     }
 }
