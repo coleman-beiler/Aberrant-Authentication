@@ -49,7 +49,10 @@ Aberrant is easy and only requires that you have Java 8 installed and have a run
     
 That's it on the deployment! There is a little bit more you should know though.
 
-* The default user is 'admin' and it's password is 'admin' as well..  (Please change this immediately).
+* The default user is 'admin' and it's password is 'Admin123!@#' as well..  (Please change this immediately).
+* The current password requirements are:
+  * Minimum 8 characters.
+  * Atleast 1 capital letter, 1 lowercase letter, 1 number, and 1 special character.
 * I am currently working on a small Vue.js project that will allow you to interface with this API from the UI to make it easier on you.
 
 ___

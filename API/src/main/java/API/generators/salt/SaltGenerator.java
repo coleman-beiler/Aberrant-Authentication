@@ -10,7 +10,7 @@ public class SaltGenerator {
 
     public String generate() {
         Random random = new Random();
-        int length = random.nextInt(15)+10;
+        int length = random.nextInt(20)+55;
         return RandomStringUtils.random(length,true,true);
     }
 }
