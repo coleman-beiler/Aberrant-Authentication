@@ -99,8 +99,8 @@ URL: /api/auth/v1/checkSession
   ***
 URL: /api/auth/v1/logout
   * Method: POST
-  * Request Body: sessionToken, refreshToken, requestNumber
-  * Request Headers: N/A
+  * Request Body: N/A
+  * Request Headers: sessionToken, refreshToken, requestNumber
   * Response Body: N/A
   * Response Headers: N/A
   * Description: Ends the requested session
@@ -108,31 +108,31 @@ URL: /api/auth/v1/logout
 URL: /api/auth/v1/users/select, /api/auth/v1/users/select/{username}
   * Method: GET
   * Request Body: N/A
-  * Request Headers: sessionToken, refreshToken requestNumber
+  * Request Headers: sessionToken, refreshToken, requestNumber
   * Response Body: Array of User Objects
   * Response Headers: refreshToken
   * Description: Returns all user information currently stored in the database unless a username is specified
   ***
 URL: /api/auth/v1/users/insert
   * Method: POST
-  * Request Body: sessionToken, refreshToken, requestNumber, username, email, password
-  * Request Headers: N/A
+  * Request Body: username, email, password
+  * Request Headers: sessionToken, refreshToken, requestNumber
   * Response Body: N/A
   * Response Headers: refreshToken
   * Description:  Inserts a user into the database
   ***
 URL: /api/auth/v1/users/delete 
   * Method: POST
-  * Request Body: sessionToken, refreshToken, requestNumber, username
-  * Request Headers: N/A
+  * Request Body: username
+  * Request Headers: sessionToken, refreshToken, requestNumber
   * Response Body: N/A
   * Response Headers: refreshToken
   * Description: Removes a user from the database
   ***
 URL: /api/auth/v1/users/update
   * Method: POST
-  * Request Body: sessionToken, refreshToken, requestNumber, user_id, username, email, password
-  * Request Headers: N/A
+  * Request Body: user_id, username, email, password
+  * Request Headers: sessionToken, refreshToken, requestNumber
   * Response Body: N/A
   * Response Headers: refreshToken
   * Description: Updates a user currently in the database
@@ -147,16 +147,16 @@ URL: /api/auth/v1/groups/select, /api/auth/v1/groups/select/{groupName}
   ***
 URL: /api/auth/v1/groups/insert 
   * Method: POST
-  * Request Body: sessionToken, refreshToken, requestNumber, groupName
-  * Request Headers: N/A
+  * Request Body: groupName
+  * Request Headers: sessionToken, refreshToken, requestNumber
   * Response Body: N/A
   * Response Headers: refreshToken
   * Description: Inserts a group into the database
   ***
 URL: /api/auth/v1/groups/delete
   * Method: POST
-  * Request Body: sessionToken, refreshToken, requestNumber, groupName
-  * Request Headers: N/A
+  * Request Body: groupName
+  * Request Headers: sessionToken, refreshToken, requestNumber
   * Response Body: N/A
   * Response Headers: refreshToken
   * Description: removes a group from the database
@@ -173,7 +173,7 @@ ___
 
 ### Contact & Contributing
 
-You can currently reach me at ***beiler.coleman@gmail.com***. <br />
+You can currently reach me at ***beiler DOT coleman AT gmail DOT com***. <br />
 I've got a lot of ideas around security and I would love to hear your's too. <br />
 Feel free to reach out for any support / questions.
 
