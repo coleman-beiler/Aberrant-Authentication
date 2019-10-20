@@ -1,13 +1,12 @@
 /*
  *
  *  Aberrant - Authentication
- *  Free authentication service to use with MySQL.
+ *  Free authentication / authorization / session tracking.
  *
  */
 
 package API;
 
-import API.generators.hash.HashGenerator;
 import API.generators.refresh.RefreshGenerator;
 import API.generators.salt.SaltGenerator;
 import API.generators.session.SessionGenerator;
@@ -18,9 +17,12 @@ import API.persistance.model.User;
 import API.repository.GroupRepository;
 import API.repository.SessionRepository;
 import API.repository.UserRepository;
+import API.util.RequirementsCheck;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import de.mkammerer.argon2.Argon2;
+import de.mkammerer.argon2.Argon2Factory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -35,21 +37,19 @@ import java.util.Set;
 
 @RestController
 @RequestMapping(value = "/api/auth/v1")
-public class HookController {
+public class AuthenticationController {
 
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private SessionRepository sessionRepository;
-
     @Autowired
     private GroupRepository groupRepository;
 
     private SaltGenerator saltGenerator = new SaltGenerator();
-    private HashGenerator hashGenerator = new HashGenerator();
     private SessionGenerator sessionGenerator = new SessionGenerator();
     private RefreshGenerator refreshGenerator = new RefreshGenerator();
+    private RequirementsCheck requirementsCheck = new RequirementsCheck();
 
     @RequestMapping(value = { "/users/select", "/users/select/{username}" }, method = RequestMethod.GET)
     public @ResponseBody
@@ -77,19 +77,29 @@ public class HookController {
         String refreshToken = headers.get("refreshtoken");
         int requestNumber = Integer.valueOf(headers.get("requestnumber"));
         SessionResponse sessionResponse = checkSession(sessionToken,refreshToken,requestNumber);
+        sessionResponse.setAnswer(true);
         if(sessionResponse.getAnswer()) {
+            HttpHeaders responseHeaders = new HttpHeaders();
+            responseHeaders.set("refreshToken",sessionResponse.getRefreshToken());
             JsonElement jsonElement = new JsonParser().parse(jsonString);
             JsonObject jobject = jsonElement.getAsJsonObject();
             String username = jobject.get("username").getAsString();
             String email = jobject.get("email").getAsString();
             String passwordOriginal = jobject.get("password").getAsString();
+            boolean passwordChecksOut = requirementsCheck.verifyPasswordMeetsRequirement(passwordOriginal);
+            System.out.println("Is it good?: "+passwordChecksOut);
+            if(!passwordChecksOut){
+                return ResponseEntity.badRequest().headers(responseHeaders).build();
+            }
             String salt_front = saltGenerator.generate();
             String salt_back = saltGenerator.generate();
             Set<Group> groups = new HashSet<Group>();
-            String password = hashGenerator.generateHash(salt_front, passwordOriginal, salt_back);
-            HttpHeaders responseHeaders = new HttpHeaders();
-            responseHeaders.set("refreshToken",sessionResponse.getRefreshToken());
-            User user = new User(username, email, password, groups, salt_front, salt_back);
+            String password = salt_front.concat(passwordOriginal).concat(salt_back);
+            System.out.println(password);
+            Argon2 argon2 = Argon2Factory.create(Argon2Factory.Argon2Types.ARGON2id);
+            String hash = argon2.hash(4, 1024 * 1024, 8, password.getBytes());
+            System.out.println(hash);
+            User user = new User(username, email, hash, groups, salt_front, salt_back);
             List<User> userFound = userRepository.findByUsername(username);
             if (userFound.size() == 0) {
                 userRepository.save(user);
@@ -146,7 +156,9 @@ public class HookController {
             if (!password.isEmpty()) {
                 String salt_front = saltGenerator.generate();
                 String salt_back = saltGenerator.generate();
-                String newPassword = hashGenerator.generateHash(salt_front, password, salt_back);
+                String newPassword = salt_front.concat(password).concat(salt_back);
+                Argon2 argon2 = Argon2Factory.create(Argon2Factory.Argon2Types.ARGON2id);
+                String hash = argon2.hash(4, 1024 * 1024, 8, newPassword.getBytes());
                 user.setPassword(newPassword);
             }
             userRepository.save(user);
@@ -222,12 +234,14 @@ public class HookController {
         JsonObject jobject = jsonElement.getAsJsonObject();
         String username = jobject.get("username").getAsString();
         String password = jobject.get("password").getAsString();
-
         User user = userRepository.findByUsername(username).get(0);
-
-        String realPass =  hashGenerator.generateHash(user.getSaltFront(),password,user.getSalt_back());
-
-        if(user.getPassword().equals(realPass)) {
+        String salt_front = user.getSaltFront();
+        String salt_back = user.getSalt_back();
+        String hash = user.getPassword();
+        String passwordCheck = salt_front.concat(password).concat(salt_back);
+        Argon2 argon2 = Argon2Factory.create(Argon2Factory.Argon2Types.ARGON2id);
+        boolean authenticated = argon2.verify(hash,passwordCheck.getBytes());
+        if(authenticated) {
             Session session = sessionGenerator.generateSession(user.getid(), username, host);
             sessionRepository.save(session);
             return new ResponseEntity<>(session,HttpStatus.OK);
@@ -276,16 +290,10 @@ public class HookController {
                     sessionRepository.save(session);
                     sessionResponse.setAnswer(true);
                     sessionResponse.setRefreshToken(session.getRefreshToken());
-                    return sessionResponse;
-                } else {
-                    return sessionResponse;
                 }
-            } else {
-                return sessionResponse;
             }
-        } else {
-            return sessionResponse;
         }
+        return sessionResponse;
     }
 
     @RequestMapping(value = "/logout", method = RequestMethod.POST)
@@ -301,6 +309,5 @@ public class HookController {
             return new ResponseEntity(HttpStatus.UNAUTHORIZED);
         }
     }
-
 }
 

@@ -25,13 +25,13 @@ databaseChangeLog:
                   type: varchar(50)
               - column:
                   name: password
-                  type: varchar(100)
+                  type: varchar(256)
               - column:
                   name: salt_front
-                  type: varchar(25)
+                  type: varchar(128)
               - column:
                   name: salt_back
-                  type: varchar(25)
+                  type: varchar(128)
 
   - changeSet:
       id: 2
@@ -124,10 +124,10 @@ databaseChangeLog:
                   value: admin@admin.com
               - column:
                   name: password
-                  value: c824233356d4223695cc9c8c834c272f70e84419cff5f3faaa4048e17e95837f
+                  value: $argon2id$v=19$m=1048576,t=4,p=8$rbN4wfvtK8WCJaZMxpxRNQ$ee7l7GfwjdJL9+7IucjcT1jT6u3ljK7Q6NG6wkRZ5Yw
               - column:
                   name: salt_front
-                  value: Sh4uzo5so2gd
+                  value: NGNT7jaMACbbTzC1wu6NCUANoRO4Pc0uwktv2ZDnsi3qQN3ZTnomqBADQtJmZaKS7Y1QoWs3Af
               - column:
                   name: salt_back
-                  value: kMpBfEm1EwGnBTPOikjH9
+                  value: oO8e9uHcDyBc7ztaLTumVyr6e9tbcrJIIXPGcvzXTfOzTot69UkmzfoNYrAqOuYqqAOfE
