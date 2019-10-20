@@ -72,15 +72,14 @@ public class HookController {
     }
 
     @RequestMapping(value = "/users/insert", method = RequestMethod.POST)
-    public ResponseEntity<HttpStatus> insertUser(@RequestBody String jsonString) {
-        JsonElement jsonElement = new JsonParser().parse(jsonString);
-        JsonObject jobject = jsonElement.getAsJsonObject();
-        String sessionToken = jobject.get("sessionToken").getAsString();
-        String refreshToken = jobject.get("refreshToken").getAsString();
-        int requestNumber = jobject.get("requestNumber").getAsInt();
-
+    public ResponseEntity<HttpStatus> insertUser(@RequestBody String jsonString, @RequestHeader Map<String, String> headers) {
+        String sessionToken = headers.get("sessiontoken");
+        String refreshToken = headers.get("refreshtoken");
+        int requestNumber = Integer.valueOf(headers.get("requestnumber"));
         SessionResponse sessionResponse = checkSession(sessionToken,refreshToken,requestNumber);
         if(sessionResponse.getAnswer()) {
+            JsonElement jsonElement = new JsonParser().parse(jsonString);
+            JsonObject jobject = jsonElement.getAsJsonObject();
             String username = jobject.get("username").getAsString();
             String email = jobject.get("email").getAsString();
             String passwordOriginal = jobject.get("password").getAsString();
@@ -104,15 +103,14 @@ public class HookController {
     }
 
     @RequestMapping(value = "/users/delete", method = RequestMethod.POST)
-    public ResponseEntity<HttpStatus> deleteUser(@RequestBody String jsonString) {
-
-        JsonElement jsonElement = new JsonParser().parse(jsonString);
-        JsonObject jobject = jsonElement.getAsJsonObject();
-        String sessionToken = jobject.get("sessionToken").getAsString();
-        String refreshToken = jobject.get("refreshToken").getAsString();
-        int requestNumber = jobject.get("requestNumber").getAsInt();
+    public ResponseEntity<HttpStatus> deleteUser(@RequestBody String jsonString, @RequestHeader Map<String, String> headers) {
+        String sessionToken = headers.get("sessiontoken");
+        String refreshToken = headers.get("refreshtoken");
+        int requestNumber = Integer.valueOf(headers.get("requestnumber"));
         SessionResponse sessionResponse = checkSession(sessionToken,refreshToken,requestNumber);
         if(sessionResponse.getAnswer()) {
+            JsonElement jsonElement = new JsonParser().parse(jsonString);
+            JsonObject jobject = jsonElement.getAsJsonObject();
             HttpHeaders responseHeaders = new HttpHeaders();
             responseHeaders.set("refreshToken",sessionResponse.getRefreshToken());
             String username = jobject.get("username").getAsString();
@@ -124,14 +122,14 @@ public class HookController {
     }
 
     @RequestMapping(value = "/users/update", method = RequestMethod.POST)
-    public ResponseEntity<HttpStatus> changeUser(@RequestBody String jsonString) {
-        JsonElement jsonElement = new JsonParser().parse(jsonString);
-        JsonObject jobject = jsonElement.getAsJsonObject();
-        String sessionToken = jobject.get("sessionToken").getAsString();
-        String refreshToken = jobject.get("refreshToken").getAsString();
-        int requestNumber = jobject.get("requestNumber").getAsInt();
+    public ResponseEntity<HttpStatus> changeUser(@RequestBody String jsonString, @RequestHeader Map<String, String> headers) {
+        String sessionToken = headers.get("sessiontoken");
+        String refreshToken = headers.get("refreshtoken");
+        int requestNumber = Integer.valueOf(headers.get("requestnumber"));
         SessionResponse sessionResponse = checkSession(sessionToken,refreshToken,requestNumber);
         if(sessionResponse.getAnswer()) {
+            JsonElement jsonElement = new JsonParser().parse(jsonString);
+            JsonObject jobject = jsonElement.getAsJsonObject();
             HttpHeaders responseHeaders = new HttpHeaders();
             responseHeaders.set("refreshToken",sessionResponse.getRefreshToken());
             int id = jobject.get("user_id").getAsInt();
@@ -159,16 +157,15 @@ public class HookController {
     }
 
     @RequestMapping(value = "/groups/insert", method = RequestMethod.POST)
-    public ResponseEntity<HttpStatus> addGroup(@RequestBody String jsonString) {
-        JsonElement jsonElement = new JsonParser().parse(jsonString);
-        JsonObject jobject = jsonElement.getAsJsonObject();
-        String sessionToken = jobject.get("sessionToken").getAsString();
-        String refreshToken = jobject.get("refreshToken").getAsString();
-        int requestNumber = jobject.get("requestNumber").getAsInt();
-        String groupName = jobject.get("groupName").getAsString();
-
+    public ResponseEntity<HttpStatus> addGroup(@RequestBody String jsonString, @RequestHeader Map<String, String> headers) {
+        String sessionToken = headers.get("sessiontoken");
+        String refreshToken = headers.get("refreshtoken");
+        int requestNumber = Integer.valueOf(headers.get("requestnumber"));
         SessionResponse sessionResponse = checkSession(sessionToken,refreshToken,requestNumber);
         if(sessionResponse.getAnswer()) {
+            JsonElement jsonElement = new JsonParser().parse(jsonString);
+            JsonObject jobject = jsonElement.getAsJsonObject();
+            String groupName = jobject.get("groupName").getAsString();
             HttpHeaders responseHeaders = new HttpHeaders();
             responseHeaders.set("refreshToken",sessionResponse.getRefreshToken());
             Group group = new Group();
@@ -181,16 +178,15 @@ public class HookController {
     }
 
     @RequestMapping(value = "/groups/delete", method = RequestMethod.POST)
-    public ResponseEntity<HttpStatus> deleteGroup(@RequestBody String jsonString) {
-        JsonElement jsonElement = new JsonParser().parse(jsonString);
-        JsonObject jobject = jsonElement.getAsJsonObject();
-        String sessionToken = jobject.get("sessionToken").getAsString();
-        String refreshToken = jobject.get("refreshToken").getAsString();
-        int requestNumber = jobject.get("requestNumber").getAsInt();
-        String groupName = jobject.get("groupName").getAsString();
-
+    public ResponseEntity<HttpStatus> deleteGroup(@RequestBody String jsonString, @RequestHeader Map<String, String> headers) {
+        String sessionToken = headers.get("sessiontoken");
+        String refreshToken = headers.get("refreshtoken");
+        int requestNumber = Integer.valueOf(headers.get("requestnumber"));
         SessionResponse sessionResponse = checkSession(sessionToken,refreshToken,requestNumber);
         if(sessionResponse.getAnswer()) {
+            JsonElement jsonElement = new JsonParser().parse(jsonString);
+            JsonObject jobject = jsonElement.getAsJsonObject();
+            String groupName = jobject.get("groupName").getAsString();
             HttpHeaders responseHeaders = new HttpHeaders();
             responseHeaders.set("refreshToken",sessionResponse.getRefreshToken());
             groupRepository.deleteByGroupName(groupName);
@@ -293,13 +289,10 @@ public class HookController {
     }
 
     @RequestMapping(value = "/logout", method = RequestMethod.POST)
-    public ResponseEntity logout (@RequestBody String jsonString){
-        JsonElement jsonElement = new JsonParser().parse(jsonString);
-        JsonObject jobject = jsonElement.getAsJsonObject();
-        String sessionToken = jobject.get("sessionToken").getAsString();
-        String refreshToken = jobject.get("refreshToken").getAsString();
-        int requestNumber = jobject.get("requestNumber").getAsInt();
-
+    public ResponseEntity logout(@RequestHeader Map<String, String> headers){
+        String sessionToken = headers.get("sessiontoken");
+        String refreshToken = headers.get("refreshtoken");
+        int requestNumber = Integer.valueOf(headers.get("requestnumber"));
         SessionResponse sessionResponse = checkSession(sessionToken,refreshToken,requestNumber);
         if(sessionResponse.getAnswer()) {
             sessionRepository.deleteBySessionToken(sessionToken);
