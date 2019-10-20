@@ -17,10 +17,8 @@ public class RequirementsCheck {
         boolean specialFlag = false;
         boolean lengthFlag = (password.length() >= 8);
         String specialChars = "/*!@#$%^&*()\"{}_[]|\\?/<>,.";
-        System.out.println(password);
         for(int i=0; i < password.length(); i++){
             character = password.charAt(i);
-            System.out.println(character);
             if(Character.isDigit(character)){
                 numberFlag = true;
             } else if(Character.isUpperCase(character)){

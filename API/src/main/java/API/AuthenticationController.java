@@ -87,7 +87,6 @@ public class AuthenticationController {
             String email = jobject.get("email").getAsString();
             String passwordOriginal = jobject.get("password").getAsString();
             boolean passwordChecksOut = requirementsCheck.verifyPasswordMeetsRequirement(passwordOriginal);
-            System.out.println("Is it good?: "+passwordChecksOut);
             if(!passwordChecksOut){
                 return ResponseEntity.badRequest().headers(responseHeaders).build();
             }
@@ -95,10 +94,8 @@ public class AuthenticationController {
             String salt_back = saltGenerator.generate();
             Set<Group> groups = new HashSet<Group>();
             String password = salt_front.concat(passwordOriginal).concat(salt_back);
-            System.out.println(password);
             Argon2 argon2 = Argon2Factory.create(Argon2Factory.Argon2Types.ARGON2id);
             String hash = argon2.hash(4, 1024 * 1024, 8, password.getBytes());
-            System.out.println(hash);
             User user = new User(username, email, hash, groups, salt_front, salt_back);
             List<User> userFound = userRepository.findByUsername(username);
             if (userFound.size() == 0) {
